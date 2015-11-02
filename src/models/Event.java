@@ -37,6 +37,4 @@ public class Event implements Serializable {
         keyCode = -1;
         terminalCmd = "";
     }
-    
-    
 }

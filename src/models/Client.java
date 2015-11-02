@@ -33,11 +33,17 @@ public class Client {
     
         public static void main(String[] args) {
         try {
+            
             sock = new Socket("localhost", 6013);
+            
             InputStream in = sock.getInputStream();
+            
             ObjectInputStream ois = new ObjectInputStream(in);
+            
             try {
+                
                 e = (Event) ois.readObject();
+                
                 if (e!=null){
                     switch(e.eventType){
                         case 0:

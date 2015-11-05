@@ -42,8 +42,15 @@ public void initialize(){
        @Override
        public void keyPressed(KeyEvent e) {
            event = new Event();
-           int keycode = e.getExtendedKeyCode();
-           event.keyCode = keycode;
+           int keycode;
+           String OS = System.getProperty("os.name").toLowerCase();
+       System.out.println(OS);
+       if(OS.contains("mac")){
+           keycode = e.getKeyCode();
+       }else{
+           keycode = e.getExtendedKeyCode();
+       }
+       event.keyCode = keycode;
            System.out.println("The keypressed is: " + keycode);
        }
 

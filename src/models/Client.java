@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Level;
@@ -30,50 +31,89 @@ public class Client {
     
     public static Event e;
     public static Socket sock;
+    public static File file = null;
     
         public static void main(String[] args) {
-        try {
-            
-            sock = new Socket("localhost", 6013);
-            
-            InputStream in = sock.getInputStream();
-            
-            ObjectInputStream ois = new ObjectInputStream(in);
-            
-            try {
-                
-                e = (Event) ois.readObject();
-                
-                if (e!=null){
-                    switch(e.eventType){
-                        case 0:
-                            moveMouse();
-                            break;
-                        case 1:
-                            clickMouse();
-                            break;
-                        case 2:
-                            typeKey();
-                            break;
-                        case 3:
-                            executeCmd();
-                            break;
-                        case 4:
-                            takeScreenshot();
-                            break;
-                    }                    
+            while(true){
+                try {
+
+                    sock = new Socket("localhost", 6013);
+
+        //          Input Streams  
+
+                    InputStream in = sock.getInputStream();
+
+                    ObjectInputStream ois = new ObjectInputStream(in);
+
+        //            Output streams
+                    OutputStream os = sock.getOutputStream();
+
+                    ObjectOutputStream oos = new ObjectOutputStream(os);
+
+                    try {
+
+                        if(file!=null){
+
+                                FileInputStream fin = new FileInputStream(file);
+
+                                int c;
+                                int sz=(int)file.length();
+                                byte b[]=new byte [sz];
+                                oos.writeObject(new Integer(sz));
+                                oos.flush();
+                                int j=0;
+
+                                while ((c = fin.read()) != -1) {
+                                    b[j]=(byte)c;
+                                    j++;
+                                }
+                            /*for (int i = 0; i<sz; i++)
+                            {
+                                System.out.print(b[i]);
+                            }*/
+                                fin.close();
+                                oos.flush();
+                                oos.write(b,0,b.length);
+                                oos.flush();
+                                System.out.println ("Size "+sz);
+                                oos.writeObject(new String("Ok"));
+                                oos.flush();
+                                file = null;
+                        }
+
+                        e = (Event) ois.readObject();
+
+                        if (e!=null){
+                            switch(e.eventType){
+                                case 0:
+                                    moveMouse();
+                                    break;
+                                case 1:
+                                    clickMouse();
+                                    break;
+                                case 2:
+                                    typeKey();
+                                    break;
+                                case 3:
+                                    executeCmd();
+                                    break;
+                                case 4:
+                                    takeScreenshot();
+                                    break;
+                            }                    
+                        }
+                    } catch (ClassNotFoundException ex) {
+
+                    }
+
+                    ois.close();
+                    in.close();
+                    sock.close();
                 }
-            } catch (ClassNotFoundException ex) {
-                
+                catch (IOException ioe) {
+                    System.err.println(ioe);
+                }
             }
-            
-            ois.close();
-            in.close();
-            sock.close();
-        }
-        catch (IOException ioe) {
-            System.err.println(ioe);
-        }
     }
         
         
@@ -127,10 +167,9 @@ public class Client {
             
             Rectangle screenRect = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
             BufferedImage capture = null;
-            File file = null;
+            
             boolean write = false;
             
-            while(true){
                 try {
                     
                     capture = new Robot().createScreenCapture(screenRect);
@@ -146,56 +185,5 @@ public class Client {
                     } catch (IOException ex) {
                         Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
                     }
-
-
-                    try {
-                        
-                        ServerSocket ss = new ServerSocket(6013);
-                        
-                        System.out.println ("Waiting for request");
-                        
-                        Socket s = ss.accept();
-
-                        System.out.println ("Connected With"+s.getInetAddress().toString());
-
-                        ObjectOutputStream  oos = new ObjectOutputStream(s.getOutputStream());
-                        
-                        if(file==null){
-                            return;
-                        }
-                        
-                        File f = file;
-                        
-                        FileInputStream fin = new FileInputStream(f);
-
-                        int c;
-                        int sz=(int)f.length();
-                        byte b[]=new byte [sz];
-                        oos.writeObject(new Integer(sz));
-                        oos.flush();
-                        int j=0;
-                        
-                        while ((c = fin.read()) != -1) {
-                            b[j]=(byte)c;
-                            j++;
-                        }
-                    /*for (int i = 0; i<sz; i++)
-                    {
-                        System.out.print(b[i]);
-                    }*/
-                        fin.close();
-                        oos.flush();
-                        oos.write(b,0,b.length);
-                        oos.flush();
-                        System.out.println ("Size "+sz);
-                        System.out.println ("buf size"+ss.getReceiveBufferSize());
-                        oos.writeObject(new String("Ok"));
-                        oos.flush();
-                        ss.close();
-                    }
-                    catch (Exception ex) {
-                        System.out.println ("Error"+ex);
-                    }
-            }
         }
 }

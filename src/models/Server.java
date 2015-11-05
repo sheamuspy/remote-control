@@ -8,11 +8,15 @@ package models;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.ObjectStreamClass;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -23,57 +27,58 @@ public class Server {
 //    public static Event curEvent;
     
         public static void main(String[] args) {
-            
+          while(true) {  
         try {
             
             ServerSocket sock = new ServerSocket(6013);
             
-            while(true) {
+            
                 
                 Socket client = sock.accept();
+                
+//                Output streams.
                 OutputStream os = client.getOutputStream();
                 ObjectOutputStream oos = new ObjectOutputStream(os);
+                
+//                Input streams
+                InputStream is = client.getInputStream();
+                ObjectInputStream ois = new ObjectInputStream(is);
+                                
+                
                 Event curEvent = new Event();
                 curEvent.eventType = 4;
                 
-                if(curEvent.eventType == 4){
-                    getScreenshot();
-                }
                 oos.writeObject(curEvent);
+                
+                if(curEvent.eventType == 4){
+                        int sz=(Integer)ois.readInt();
+                    System.out.println ("Receving "+(sz/1024)+" Bytes From Sever");
+
+                    byte b[]=new byte [sz];
+                    int bytesRead = ois.read(b, 0, b.length);
+                    for (int i = 0; i<sz; i++)
+                    {
+                        System.out.print(b[i]);
+                    }
+
+                    FileOutputStream fos=new FileOutputStream(new File("Desktop\\demo.jpg"));
+    //                fos.write(b,0,b.length);
+
+                    System.out.println ("From Server : "+ois.readObject());
+                    ois.close();
+                }
                 
                 oos.close();
                 
                 client.close();
+                
             }
-        }
-        catch (IOException ioe) {
-            System.err.println(ioe);
-        }
-    }
-        public static void getScreenshot(){
-            ObjectInputStream ois = null;
-            Socket socket = null;
-            java.util.Date date = null;
-            try {
-                socket = new Socket("localhost", 6013);
-                ois = new ObjectInputStream(socket.getInputStream());
         
-                int sz=(Integer )ois.readObject();
-                System.out.println ("Receving "+(sz/1024)+" Bytes From Sever");
-         
-                byte b[]=new byte [sz];
-                int bytesRead = ois.read(b, 0, b.length);
-                for (int i = 0; i<sz; i++)
-                {
-                    System.out.print(b[i]);
-                }
-                FileOutputStream fos=new FileOutputStream(new File("demo.jpg"));
-                fos.write(b,0,b.length);
-                System.out.println ("From Server : "+ois.readObject());
-                ois.close();
-            } catch(Exception e) {
-                System.out.println(e.getMessage());
-                e.printStackTrace();
+        catch (IOException ioe) {
+            ioe.printStackTrace();
+        }   catch (ClassNotFoundException ex) {
+                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
             }
+    }
         }
 }

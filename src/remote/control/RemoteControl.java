@@ -24,6 +24,10 @@ public class RemoteControl {
         Input i = new Input();
         KeyBoardController kbc = new KeyBoardController(i);
         kbc.initialize();
+//        while(true){
+//        System.out.println("("+ MouseInfo.getPointerInfo().getLocation().x +", "+ MouseInfo.getPointerInfo().getLocation().y +")"); 
+//            
+//        }
     }
     
 }

@@ -12,7 +12,6 @@ import java.awt.event.MouseMotionListener;
 import javax.swing.event.MouseInputListener;
 import models.Event;
 import views.Input;
-
 /**
  *
  * @author sheamus

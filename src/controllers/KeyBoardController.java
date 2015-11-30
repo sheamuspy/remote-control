@@ -42,7 +42,7 @@ public void initialize(){
        @Override
        public void keyPressed(KeyEvent e) {
            event = new Event();
-           int keycode = e.getExtendedKeyCode();
+           int keycode = e.KeyCode();
            event.keyCode = keycode;
            System.out.println("The keypressed is: " + keycode);
        }

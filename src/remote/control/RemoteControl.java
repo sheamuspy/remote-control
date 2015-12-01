@@ -13,21 +13,23 @@ import views.Input;
  *
  * @author sheamus
  */
-public class RemoteControl {
-
+public class RemoteControl extends Thread{
+    public static KeyBoardController kbc = null;
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        Server server = new Server();
+//        new RemoteControl().start();
         Input i = new Input();
-        KeyBoardController kbc = new KeyBoardController(i);
-        kbc.initialize();
-//        while(true){
-//        System.out.println("("+ MouseInfo.getPointerInfo().getLocation().x +", "+ MouseInfo.getPointerInfo().getLocation().y +")"); 
-//            
-//        }
+//        kbc = new KeyBoardController(i);
+//        kbc.initialize();
+        Server server = new Server(i);
+        server.initialize();
+        server.serve();
     }
     
+    @Override
+    public void run(){
+    }
 }
